@@ -1,0 +1,6 @@
+.DS_Store
+.ruff_cache/
+data/
+mlruns/
+lightning_logs/
+__pycache__/

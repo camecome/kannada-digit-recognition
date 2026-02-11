@@ -10,6 +10,7 @@ dependencies = [
   "pandas (<3)",
   "mlflow (>=3.9.0,<4.0.0)",
   "fire (>=0.7.1,<0.8.0)",
+  "dvc (>=3.66.1,<4.0.0)",
 ]
 description = "Model and utilities for handwritten Kannada digit recognition using the Kannada-MNIST dataset."
 name = "kannada-mnist"
