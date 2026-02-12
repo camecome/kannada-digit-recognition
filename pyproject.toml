@@ -10,7 +10,7 @@ dependencies = [
   "pandas (<3)",
   "mlflow (>=3.9.0,<4.0.0)",
   "fire (>=0.7.1,<0.8.0)",
-  "dvc (>=3.66.1,<4.0.0)",
+  "kagglehub (>=1.0.0,<2.0.0)",
 ]
 description = "Model and utilities for handwritten Kannada digit recognition using the Kannada-MNIST dataset."
 name = "kannada-mnist"
@@ -25,8 +25,9 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 [dependency-groups]
 dev = [
   "pre-commit (>=4.5.1,<5.0.0)",
-  "ipykernel (>=7.2.0,<8.0.0)",
   "dvc (>=3.66.1,<4.0.0)",
+  "hydra-core (>=1.3.2,<2.0.0)",
+  "dvc-gdrive (>=3.0.1,<4.0.0)",
 ]
 
 [tool.ruff]

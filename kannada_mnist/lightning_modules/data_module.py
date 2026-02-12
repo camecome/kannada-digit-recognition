@@ -1,84 +1,77 @@
+from pathlib import Path
+
 import lightning as L
 import torchvision.transforms as transforms
-from torch.utils.data import DataLoader
+from omegaconf import DictConfig
+from torch import Generator
+from torch.utils.data import DataLoader, Dataset, random_split
 
 from kannada_mnist.utilities.kannada_MNIST_dataset import KannadaMNISTDataset
 from kannada_mnist.utilities.transforms import ToTensor28x28
 
 
 class KannadaMNISTDataModule(L.LightningDataModule):
-    _train_transforms = transforms.Compose([ToTensor28x28()])
-    _val_transforms = transforms.Compose([ToTensor28x28()])
-    _test_transforms = transforms.Compose([ToTensor28x28()])
-    _predict_transforms = transforms.Compose([ToTensor28x28()])
-
-    def __init__(self, data_dir: str, train_batch_size: int = 64, predict_batch_size: int = 64):
+    def __init__(self, config: DictConfig):
         super().__init__()
 
-        self.train_data_path = f"{data_dir}/train.csv"
-        self.val_data_path = f"{data_dir}/val.csv"
-        self.test_data_path = f"{data_dir}/test.csv"
-        self.predict_data_path = f"{data_dir}/predict.csv"
+        data_dir = Path(config.data_dir or "data")
+        # predict_path = Path(config.predict_path) if config.predict_path is not None else None
+        self.train_path = data_dir / "train.csv"
+        self.test_path = data_dir / "test.csv"
+        self.predict_path = None  # TODO: add the logic to handle predict_path in the future
+        # self.predict_path = predict_path
 
-        self.train_batch_size = train_batch_size
-        self.predict_batch_size = predict_batch_size
+        self.batch_size = config.batch_size
+        self.data_split_ratio = config.data_split_ratio
+        self.num_workers = config.num_workers
 
-        self.num_workers = 0  # For MacOS compatibility
+        self._generator = Generator().manual_seed(config.random_seed)
+        self._default_transform = transforms.Compose([ToTensor28x28()])
 
-    def prepare_data(self):
-        raise NotImplementedError(
-            "Yet to implement the prepare_data method for KannadaMNISTDataModule"
+    def train_val_split(self, dataset: Dataset):
+        val_size = int(len(dataset) * self.data_split_ratio)
+        train_size = len(dataset) - val_size
+        return random_split(dataset, [train_size, val_size], generator=self._generator)
+
+    def setup(self, stage: str | None = None):
+        stage_map = {
+            "fit": (self.train_path, self._default_transform, True),
+            "test": (self.test_path, self._default_transform, True),
+            "predict": (self.predict_path, self._default_transform, False),
+        }
+
+        if stage not in stage_map:
+            raise ValueError(f"Invalid stage: {stage}. Expected one of {list(stage_map.keys())}")
+
+        data_path, transform, has_labels = stage_map[stage]
+        dataset = KannadaMNISTDataset(data_path, transform=transform, has_labels=has_labels)
+
+        self.num_classes = dataset.get_num_classes() if has_labels else None
+
+        if stage == "fit":
+            self.custom_train_dataset, self.custom_val_dataset = self.train_val_split(dataset)
+        else:
+            setattr(self, f"{stage}_dataset", dataset)
+
+    def _init_dataloader(self, dataset, batch_size, shuffle=False) -> DataLoader:
+        return DataLoader(
+            dataset,
+            batch_size=batch_size,
+            shuffle=shuffle,
+            num_workers=self.num_workers,
         )
 
-    def setup(self, stage: str = None):
-        if stage == "fit":
-            self.train_dataset = KannadaMNISTDataset(
-                self.train_data_path, transform=self._train_transforms
-            )
-            self.val_dataset = KannadaMNISTDataset(
-                self.val_data_path, transform=self._val_transforms
-            )
-        elif stage == "validate":
-            self.val_dataset = KannadaMNISTDataset(
-                self.val_data_path, transform=self._val_transforms
-            )
-        elif stage == "test":
-            self.test_dataset = KannadaMNISTDataset(
-                self.test_data_path, transform=self._test_transforms
-            )
-        elif stage == "predict":
-            self.predict_dataset = KannadaMNISTDataset(
-                self.predict_data_path, transform=self._predict_transforms, has_labels=False
-            )
+    def get_num_classes(self):
+        return self.num_classes
 
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(
-            self.train_dataset,
-            batch_size=self.train_batch_size,
-            shuffle=True,
-            num_workers=self.num_workers,  # For MacOS compatibility set to 0
-        )
+        return self._init_dataloader(self.custom_train_dataset, self.batch_size, shuffle=True)
 
     def val_dataloader(self) -> DataLoader:
-        return DataLoader(
-            self.val_dataset,
-            batch_size=self.predict_batch_size,  # We do not calculate gradients on validation set
-            shuffle=False,
-            num_workers=self.num_workers,  # For MacOS compatibility set to 0
-        )
+        return self._init_dataloader(self.custom_val_dataset, self.batch_size)
 
     def test_dataloader(self) -> DataLoader:
-        return DataLoader(
-            self.test_dataset,
-            batch_size=self.predict_batch_size,
-            shuffle=False,
-            num_workers=self.num_workers,  # For MacOS compatibility set to 0
-        )
+        return self._init_dataloader(self.test_dataset, self.batch_size)
 
     def predict_dataloader(self) -> DataLoader:
-        return DataLoader(
-            self.predict_dataset,
-            batch_size=self.predict_batch_size,
-            shuffle=False,
-            num_workers=self.num_workers,  # For MacOS compatibility set to 0
-        )
+        return self._init_dataloader(self.predict_dataset, self.batch_size)

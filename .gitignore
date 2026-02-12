@@ -4,3 +4,5 @@ data/
 mlruns/
 lightning_logs/
 __pycache__/
+/data
+/checkpoints

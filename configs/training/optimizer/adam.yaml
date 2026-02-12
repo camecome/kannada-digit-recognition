@@ -1,0 +1,3 @@
+# Optimizer configuration for training
+lr: 0.001
+betas: [0.9, 0.999]

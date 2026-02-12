@@ -1,19 +1,27 @@
 import lightning as L
 import torch
 import torchmetrics
+from omegaconf import DictConfig
 
 
 class KannadaMNISTModule(L.LightningModule):
     """Module for training, evaluation and testing models for the classification task."""
 
-    def __init__(self, model, datamodule: L.LightningDataModule):
+    def __init__(
+        self,
+        model,
+        datamodule: L.LightningDataModule,
+        config: DictConfig,
+    ):
         super().__init__()
         self.model = model
         self.datamodule = datamodule
+        self.config = config
 
-        # Yet to get the number of classes from the somewhere, so for now hardcoding it to 10
+        self.num_classes = datamodule.get_num_classes()
+
         self.criterion = torch.nn.CrossEntropyLoss()
-        self.accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+        self.accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=self.num_classes)
 
     def forward(self, inputs):
         return self.model(inputs)
@@ -37,7 +45,7 @@ class KannadaMNISTModule(L.LightningModule):
             "val_accuracy", self.accuracy, prog_bar=True, logger=True, on_step=False, on_epoch=True
         )
 
-    def test_step(self, batch, batch_idx):
+    def test_step(self, batch):
         inputs, targets = batch
         outputs = self.forward(inputs)
 
@@ -46,27 +54,40 @@ class KannadaMNISTModule(L.LightningModule):
             "test_accuracy", self.accuracy, prog_bar=True, logger=True, on_step=False, on_epoch=True
         )
 
-    def predict_step(self, batch, batch_idx):
+    def predict_step(self, batch):
         inputs = batch
         outputs = self.forward(inputs)
         predicted_labels = torch.argmax(outputs, dim=1)
         return predicted_labels
 
     def get_optimizer(self):
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3, betas=(0.9, 0.999))
-        return optimizer
+        cfg = self.config.optimizer
 
-    def configure_optimizers(self):
-        optimizer = self.get_optimizer()
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode="max", factor=0.5, patience=3, min_lr=1e-5
+        return torch.optim.Adam(
+            self.model.parameters(),
+            lr=cfg.lr,
+            betas=cfg.betas,
         )
 
-        lr_scheduler = {
+    def get_scheduler(self, optimizer):
+        cfg = self.config.scheduler
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode=cfg.mode,
+            factor=cfg.factor,
+            patience=cfg.patience,
+            min_lr=cfg.min_lr,
+        )
+
+        return {
             "scheduler": scheduler,
             "interval": "epoch",
             "frequency": 1,
-            "monitor": "val_accuracy",  # Assuming we have a validation metric named 'val_accuracy'
+            "monitor": cfg.monitor,
         }
 
-        return {"optimizer": optimizer, "lr_scheduler": lr_scheduler}
+    def configure_optimizers(self):
+        optimizer = self.get_optimizer()
+        scheduler = self.get_scheduler(optimizer)
+
+        return {"optimizer": optimizer, "lr_scheduler": scheduler}

@@ -1,0 +1,7 @@
+defaults:
+  - _self_
+  - optimizer: adam
+  - scheduler: reduce_on_plateau
+
+num_epochs: 1
+chkpt_path: "checkpoints/kannada_mnist.pth"
