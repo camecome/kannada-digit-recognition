@@ -96,7 +96,7 @@ python -m kannada_mnist.commands train \
 Для тестирования:
 
 ```bash
-python -m kannada_mnist.commands train \
+python -m kannada_mnist.commands test \
     --model=<dummy_classifier|conv_classifier> \
     --path_to_chkpt=<ФАЙЛ С ЧЕКПОИНТОМ МОДЕЛИ>
 ```
