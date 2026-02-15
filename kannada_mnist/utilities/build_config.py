@@ -19,7 +19,7 @@ def build_train_config(model: str, target_dir: str):
     overrides.append(f"+model={model}")
 
     target_dir = (target_dir or DEFAULT_CHECKPOINT_DIR).rstrip("/")
-    path_to_chkpt = f"{target_dir}/{model}.pth"
+    path_to_chkpt = f"{target_dir}/{model}.ckpt"
 
     overrides.append(f"+training.chkpt_path={path_to_chkpt}")
 
@@ -35,7 +35,7 @@ def build_test_config(model: str, path_to_chkpt: str):
 
     overrides.append(f"+model={model}")
 
-    path_to_chkpt = path_to_chkpt or f"{DEFAULT_CHECKPOINT_DIR}/{model}.pth"
+    path_to_chkpt = path_to_chkpt or f"{DEFAULT_CHECKPOINT_DIR}/{model}.ckpt"
     overrides.append(f"+training.chkpt_path={path_to_chkpt}")
 
     with initialize(config_path=CONFIG_DIR, version_base=None):
@@ -50,7 +50,7 @@ def build_predict_config(model: str, path_to_chkpt: str, input_file: str, output
 
     overrides.append(f"+model={model}")
 
-    path_to_chkpt = path_to_chkpt or f"{DEFAULT_CHECKPOINT_DIR}/{model}.pth"
+    path_to_chkpt = path_to_chkpt or f"{DEFAULT_CHECKPOINT_DIR}/{model}.ckpt"
     input_file = input_file or f"{DEFAULT_DATA_DIR}/predict.csv"
     output_file = output_file or f"{DEFAULT_DATA_DIR}/{model}_predictions.csv"
 
@@ -66,7 +66,7 @@ def build_onnx_export_config(model: str, input_file: str, output_file: str):
     if model not in MODEL_REGISTRY:
         raise ValueError(f"Invalid model: {model}. Expected {MODEL_REGISTRY}")
 
-    input_file = input_file or f"{DEFAULT_CHECKPOINT_DIR}/{model}.pth"
+    input_file = input_file or f"{DEFAULT_CHECKPOINT_DIR}/{model}.ckpt"
     output_file = output_file or f"{DEFAULT_CHECKPOINT_DIR}/{model}_onnx.onnx"
 
     return {"model": model, "input_file": input_file, "output_file": output_file}

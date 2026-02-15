@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from kannada_mnist.utilities.constants import MNIST_H, MNIST_W, PIXEL_MAX_VALUE
+from kannada_mnist.utilities.constants import IMAGE_H, IMAGE_W, PIXEL_MAX_VALUE
 
 
 class ToTensor28x28:
@@ -9,7 +9,7 @@ class ToTensor28x28:
         self.normalize = normalize
 
     def __call__(self, image: np.ndarray):
-        image = image.reshape(MNIST_H, MNIST_W)
+        image = image.reshape(IMAGE_H, IMAGE_W)
         image = torch.tensor(image, dtype=torch.float32).unsqueeze(0)
 
         if self.normalize:

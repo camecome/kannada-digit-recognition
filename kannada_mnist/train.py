@@ -1,7 +1,4 @@
-import os
-
 import lightning as L
-import torch
 from lightning.pytorch.loggers import MLFlowLogger
 
 from kannada_mnist.lightning_modules.data_module import KannadaMNISTDataModule
@@ -34,9 +31,10 @@ def run_training(cfg):
     )
 
     trainer.fit(module, datamodule=datamodule)
+    trainer.save_checkpoint(cfg.training.chkpt_path)
 
-    os.makedirs(os.path.dirname(cfg.training.chkpt_path), exist_ok=True)
-    torch.save(module.model.state_dict(), cfg.training.chkpt_path)
+    # os.makedirs(os.path.dirname(cfg.training.chkpt_path), exist_ok=True)
+    # torch.save(module.model.state_dict(), cfg.training.chkpt_path)
 
 
 def train(model: str, target_dir: str = None):
