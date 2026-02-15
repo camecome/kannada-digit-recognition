@@ -1,7 +1,9 @@
 import torch.nn as nn
 
+from kannada_mnist.utilities.constants import MODEL_REGISTRY
 
-class SimpleConv(nn.Module):
+
+class DummyClassifier(nn.Module):
     """Simple convolutional model for image classification"""
 
     def __init__(self, num_classes: int):
@@ -120,12 +122,19 @@ class ConvClassifier(nn.Module):
         return logits
 
 
-def get_model(model_name: str, datamodule):
-    if model_name == "conv_classifier":
-        return ConvClassifier(num_classes=datamodule.get_num_classes())
-    elif model_name == "simple_classifier":
-        return SimpleConv(num_classes=datamodule.get_num_classes())
-    else:
-        raise ValueError(
-            f"Invalid model_name: {model_name}. Expected 'conv_classifier' or 'simple_classifier'."
-        )
+# No way to get rid of this magic constants without making the code more complex.
+# This is the best we can do to avoid circular imports.
+MODELS_TO_CLASS = {
+    "dummy_classifier": DummyClassifier,
+    "conv_classifier": ConvClassifier,
+}
+
+
+def get_model(model: str, datamodule=None, num_classes: int = None):
+    if model not in MODEL_REGISTRY:
+        raise ValueError(f"Invalid model: {model}. Expected {list(MODEL_REGISTRY.keys())}")
+
+    model_cls = MODELS_TO_CLASS[model]
+    if num_classes is not None:
+        return model_cls(num_classes=num_classes)
+    return model_cls(num_classes=datamodule.get_num_classes())

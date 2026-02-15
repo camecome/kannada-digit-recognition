@@ -1,0 +1,4 @@
+mlflow:
+  tracking_uri: "http://127.0.0.1:8080"
+  experiment_name: "kannada-mnist"
+  log_every_n_steps: 50

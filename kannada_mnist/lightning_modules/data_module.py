@@ -6,7 +6,7 @@ from omegaconf import DictConfig
 from torch import Generator
 from torch.utils.data import DataLoader, Dataset, random_split
 
-from kannada_mnist.utilities.kannada_MNIST_dataset import KannadaMNISTDataset
+from kannada_mnist.utilities.kannada_mnist_dataset import KannadaMNISTDataset
 from kannada_mnist.utilities.transforms import ToTensor28x28
 
 
@@ -15,11 +15,8 @@ class KannadaMNISTDataModule(L.LightningDataModule):
         super().__init__()
 
         data_dir = Path(config.data_dir or "data")
-        # predict_path = Path(config.predict_path) if config.predict_path is not None else None
         self.train_path = data_dir / "train.csv"
         self.test_path = data_dir / "test.csv"
-        self.predict_path = None  # TODO: add the logic to handle predict_path in the future
-        # self.predict_path = predict_path
 
         self.batch_size = config.batch_size
         self.data_split_ratio = config.data_split_ratio
@@ -37,7 +34,6 @@ class KannadaMNISTDataModule(L.LightningDataModule):
         stage_map = {
             "fit": (self.train_path, self._default_transform, True),
             "test": (self.test_path, self._default_transform, True),
-            "predict": (self.predict_path, self._default_transform, False),
         }
 
         if stage not in stage_map:
@@ -72,6 +68,3 @@ class KannadaMNISTDataModule(L.LightningDataModule):
 
     def test_dataloader(self) -> DataLoader:
         return self._init_dataloader(self.test_dataset, self.batch_size)
-
-    def predict_dataloader(self) -> DataLoader:
-        return self._init_dataloader(self.predict_dataset, self.batch_size)

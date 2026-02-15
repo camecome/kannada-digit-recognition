@@ -1,10 +1,38 @@
-import fire
+import lightning as L
+import torch
+from lightning.pytorch.loggers import MLFlowLogger
+
+from kannada_mnist.lightning_modules.data_module import KannadaMNISTDataModule
+from kannada_mnist.lightning_modules.module import KannadaMNISTModule
+from kannada_mnist.models import get_model
+from kannada_mnist.utilities.build_config import build_test_config
 
 
-def test():
-    # Yet to implement the testing loop for the model, so for now just a placeholder function
-    pass
+def run_testing(cfg):
+    datamodule = KannadaMNISTDataModule(cfg.data)
+    datamodule.setup(stage="test")
+
+    model_instance = get_model(cfg.model, datamodule)
+    module = KannadaMNISTModule(
+        model=model_instance,
+        datamodule=datamodule,
+        config=cfg.training,
+    )
+
+    module.model.load_state_dict(torch.load(cfg.training.chkpt_path))
+
+    mlflow_logger = MLFlowLogger(
+        tracking_uri=cfg.logger.mlflow.tracking_uri,
+        experiment_name=cfg.logger.mlflow.experiment_name,
+    )
+
+    trainer = L.Trainer(
+        logger=mlflow_logger,
+    )
+
+    trainer.test(module, datamodule=datamodule)
 
 
-if __name__ == "__main__":
-    fire.Fire(test)
+def test(model: str, path_to_chkpt: str = None):
+    cfg = build_test_config(model, path_to_chkpt)
+    run_testing(cfg)

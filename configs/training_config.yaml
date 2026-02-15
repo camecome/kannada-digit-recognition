@@ -1,5 +1,6 @@
 defaults:
   - _self_
-  - model: conv_classifier
+  - model: null
   - training: default
   - data: default
+  - logger: mlflow
