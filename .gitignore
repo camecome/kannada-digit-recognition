@@ -5,4 +5,5 @@ mlruns/
 lightning_logs/
 __pycache__/
 /data
-/checkpoints
+/models
+kannada_mnist/utilities/download_data.py
