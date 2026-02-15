@@ -18,8 +18,8 @@
 
 Ожидаемые значения Accuracy:
 
-- Бейзлайн: ~75%
-- Основная модель: 85–90%
+- Бейзлайн: ~75-80%
+- Основная модель: 90%+
 
 ## Валидация и тестирование
 
@@ -82,10 +82,13 @@ dvc pull
 
 ## Train
 
+Параметр `--model` везде может быть равен `dummy_classifier` или `conv_classifier`.
 Чтобы запустить тренировку, выполните команду из корня репозитория:
 
 ```bash
-python -m kannada_mnist.commands train --model=<НАЗВАНИЕ МОДЕЛИ> --target_dir=<ДИРЕКТОРИЯ, КУДА ПОЛОЖИТЬ ЧЕКПОИНТ>
+python -m kannada_mnist.commands train \
+    --model=<dummy_classifier|conv_classifier> \
+    --target_dir=<ДИРЕКТОРИЯ, КУДА ПОЛОЖИТЬ ЧЕКПОИНТ>
 ```
 
 Чекпоинт модели будет сохранен в `<НАЗВАНИЕ МОДЕЛИ>.ckpt`, по умолчанию `target_dir=models/`
@@ -93,7 +96,9 @@ python -m kannada_mnist.commands train --model=<НАЗВАНИЕ МОДЕЛИ> -
 Для тестирования:
 
 ```bash
-python -m kannada_mnist.commands train --model=<НАЗВАНИЕ МОДЕЛИ> --path_to_chkpt=<ФАЙЛ С ЧЕКПОИНТОМ МОДЕЛИ>
+python -m kannada_mnist.commands train \
+    --model=<dummy_classifier|conv_classifier> \
+    --path_to_chkpt=<ФАЙЛ С ЧЕКПОИНТОМ МОДЕЛИ>
 ```
 
 По умолчанию `path_to_chkpt=models/<НАЗВАНИЕ МОДЕЛИ>.ckpt`.
@@ -105,7 +110,10 @@ python -m kannada_mnist.commands train --model=<НАЗВАНИЕ МОДЕЛИ> -
 Для конвертации lightning-чекпоинта в ONNX:
 
 ```bash
-python -m kannada_mnist.commands export_to_onnx --model=<НАЗВАНИЕ МОДЕЛИ> --path_to_chkpt=<ФАЙЛ С ЧЕКПОИНТОМ МОДЕЛИ> --output_dir=<ДИРЕКТОРИЯ КУДА ПОЛОЖИТЬ ФАЙЛ .onnx>
+python -m kannada_mnist.commands export_to_onnx \
+    --model=<dummy_classifier|conv_classifier> \
+    --path_to_chkpt=<ФАЙЛ С ЧЕКПОИНТОМ МОДЕЛИ> \
+    --output_dir=<ДИРЕКТОРИЯ КУДА ПОЛОЖИТЬ ФАЙЛ .onnx>
 ```
 
 ## Infer
@@ -113,7 +121,9 @@ python -m kannada_mnist.commands export_to_onnx --model=<НАЗВАНИЕ МОД
 Для генерации случайного датасета для предсказаний (из тестовой части данных):
 
 ```bash
-python -m kannada_mnist.commands generate_predict_dataset --fraction=<ДОЛЯ РАЗМЕРА ДАТАСЕТА ОТ ВСЕГО ТЕСТОВОЙ ВЫБОРКИ> --random_seed=<ВАШ RANDOM SEED>
+python -m kannada_mnist.commands generate_predict_dataset \
+    --fraction=<ДОЛЯ РАЗМЕРА ДАТАСЕТА ОТ ВСЕЙ ТЕСТОВОЙ ВЫБОРКИ> \
+    --random_seed=<ВАШ RANDOM SEED>
 ```
 
 ### Локальный инференс из lightning-чекпоинта
@@ -124,7 +134,11 @@ python -m kannada_mnist.commands generate_predict_dataset --fraction=<ДОЛЯ �
 Для получения предсказаний выполните:
 
 ```bash
-python -m kannada_mnist.commands predict --model=<НАЗВАНИЕ МОДЕЛИ> --input_path=<>  --output_path=<> --path_to_chkpt=<>
+python -m kannada_mnist.commands predict \
+    --model=<dummy_classifier|conv_classifier> \
+    --input_path=<ПУТЬ К CSV ФАЙЛУ> \
+    --output_path=<ПУТЬ К CSV ДЛЯ ПРЕДСКАЗАНИЙ> \
+    --path_to_chkpt=<ФАЙЛ С ЧЕКПОИНТОМ МОДЕЛИ>
 ```
 
 По умолчанию `input_path=data/predict.csv`, `output_path=data/predictions.csv`, `path_to_chkpt=models/<НАЗВАНИЕ МОДЕЛИ>.ckpt`.
