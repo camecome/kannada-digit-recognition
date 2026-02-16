@@ -3,5 +3,5 @@ defaults:
   - optimizer: adam
   - scheduler: reduce_on_plateau
 
-num_epochs: 5
+num_epochs: 7
 path_to_ckpt: null
