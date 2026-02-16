@@ -6,7 +6,7 @@ from omegaconf import DictConfig
 from torch import Generator
 from torch.utils.data import DataLoader, Dataset, random_split
 
-from kannada_mnist.utilities.tmp_kannada_mnist_dataset import KannadaMNISTDataset
+from kannada_mnist.utilities.kannada_mnist_dataset import KannadaMNISTDataset
 from kannada_mnist.utilities.transforms import ToTensor28x28
 
 
