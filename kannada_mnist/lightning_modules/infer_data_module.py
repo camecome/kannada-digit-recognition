@@ -5,7 +5,7 @@ import torchvision.transforms as transforms
 from omegaconf import DictConfig
 from torch.utils.data import DataLoader
 
-from kannada_mnist.utilities.kannada_mnist_dataset import KannadaMNISTDataset
+from kannada_mnist.utilities.tmp_kannada_mnist_dataset import KannadaMNISTDataset
 from kannada_mnist.utilities.transforms import ToTensor28x28
 
 
