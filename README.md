@@ -84,7 +84,7 @@ dvc pull
 Чтобы запустить тренировку, выполните команду из корня репозитория:
 
 ```bash
-python -m kannada_mnist.commands train \
+poetry run python -m kannada_mnist.commands train \
     --model=<НАЗВАНИЕ МОДЕЛИ> \
     --output_dir=<ДИРЕКТОРИЯ ДЛЯ СОХРАНЕНИЯ ЧЕКПОИНТА>
 ```
@@ -96,7 +96,7 @@ python -m kannada_mnist.commands train \
 Для тестирования:
 
 ```bash
-python -m kannada_mnist.commands test \
+poetry run python -m kannada_mnist.commands test \
     --model=<НАЗВАНИЕ МОДЕЛИ> \
     --path_to_ckpt=<ПУТЬ К ЧЕКПОИНТУ>
 ```
@@ -110,7 +110,7 @@ python -m kannada_mnist.commands test \
 Для конвертации lightning-чекпоинта в ONNX:
 
 ```bash
-python -m kannada_mnist.commands export_to_onnx \
+poetry run python -m kannada_mnist.commands export_to_onnx \
     --model=<НАЗВАНИЕ МОДЕЛИ> \
     --path_to_ckpt=<ПУТЬ К ЧЕКПОИНТУ> \
     --output_dir=<ДИРЕКТОРИЯ ДЛЯ СОХРАНЕНИЯ ONNX-ФАЙЛА>
@@ -129,7 +129,7 @@ python -m kannada_mnist.commands export_to_onnx \
 Для получения предсказаний выполните:
 
 ```bash
-python -m kannada_mnist.commands predict \
+poetry run python -m kannada_mnist.commands predict \
     --model=<НАЗВАНИЕ МОДЕЛИ> \
     --input_file=<ПУТЬ К CSV ФАЙЛУ> \
     --output_file=<ПУТЬ К CSV ДЛЯ ПРЕДСКАЗАНИЙ> \
