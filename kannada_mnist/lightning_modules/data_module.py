@@ -24,6 +24,13 @@ class KannadaMNISTDataModule(L.LightningDataModule):
 
         self._generator = Generator().manual_seed(config.random_seed)
         self._default_transform = transforms.Compose([ToTensor28x28()])
+        self.train_transform = transforms.Compose(
+            [
+                ToTensor28x28(),  # reshape and normalize
+                transforms.RandomRotation(10),
+                transforms.RandomAffine(degrees=0, translate=(0.1, 0.1), scale=(0.9, 1.1)),
+            ]
+        )
 
     def train_val_split(self, dataset: Dataset):
         val_size = int(len(dataset) * self.data_split_ratio)
@@ -32,7 +39,7 @@ class KannadaMNISTDataModule(L.LightningDataModule):
 
     def setup(self, stage: str | None = None):
         stage_map = {
-            "fit": (self.train_path, self._default_transform, True),
+            "fit": (self.train_path, self.train_transform, True),
             "test": (self.test_path, self._default_transform, True),
         }
 
@@ -46,6 +53,7 @@ class KannadaMNISTDataModule(L.LightningDataModule):
 
         if stage == "fit":
             self.custom_train_dataset, self.custom_val_dataset = self.train_val_split(dataset)
+            self.custom_val_dataset.transform = self._default_transform
         else:
             setattr(self, f"{stage}_dataset", dataset)
 
