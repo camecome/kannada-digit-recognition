@@ -55,17 +55,15 @@
 
 ```bash
 # Клонирование репозитория
-git pull https://github.com/camecome/kannada-digit-recognition.git
-
-# Обновление системы
-sudo apt-get update
+git clone https://github.com/camecome/kannada-digit-recognition.git
+cd kannada-digit-recognition
 
 # Создание conda-окружения
 conda create -n kannada_mnist_env python=3.13
 conda activate kannada_mnist_env
 
 # Установка зависимостей проекта через Poetry
-poetry install --no-root
+poetry install --no-root --with dev
 
 # Установка хуков
 pre-commit install
