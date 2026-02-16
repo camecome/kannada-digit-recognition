@@ -8,7 +8,7 @@
 
 ## Формат входных и выходных данных
 
-**Вход:** одноканальное изображение размером 28×28 пикселей.
+**Вход:** одноканальное изображение размером 28×28 пикселей (0-255), вытянутое в вектор.
 
 **Выход:** метка класса цифры с максимальной вероятностью.
 
@@ -18,13 +18,14 @@
 
 Ожидаемые значения Accuracy:
 
-- Бейзлайн: ~75-80%
+- Бейзлайн: 70-75%
 - Основная модель: 90%+
 
 ## Валидация и тестирование
 
-Датасет заранее разделён на **train** и **test** части.
-Во время обучения train-выборка дополнительно делится на:
+Датасет изначально содержит три части: **train**, **test** и **predict** (в оригинальном наборе данных соответствуют файлам **train.csv**, **Dig-MNIST.csv** и **test.csv**). В рамках проекта для удобства файлы были переименованы.
+
+Во время обучения обучающая выборка дополнительно разбивается на:
 
 - Train — 80%
 - Validation — 20%
@@ -82,26 +83,27 @@ dvc pull
 
 ## Train
 
-Параметр `--model` везде может быть равен `dummy_classifier` или `conv_classifier`.
 Чтобы запустить тренировку, выполните команду из корня репозитория:
 
 ```bash
 python -m kannada_mnist.commands train \
-    --model=<dummy_classifier|conv_classifier> \
-    --target_dir=<ДИРЕКТОРИЯ, КУДА ПОЛОЖИТЬ ЧЕКПОИНТ>
+    --model=<НАЗВАНИЕ МОДЕЛИ> \
+    --output_dir=<ДИРЕКТОРИЯ ДЛЯ СОХРАНЕНИЯ ЧЕКПОИНТА>
 ```
 
-Чекпоинт модели будет сохранен в `<НАЗВАНИЕ МОДЕЛИ>.ckpt`, по умолчанию `target_dir=models/`
+Здесь и дальше `--model` - название модели: `dummy_classifier` или `conv_classifier`.
+После выполнения команды чекпоинт будет сохранен в `<НАЗВАНИЕ МОДЕЛИ>.ckpt`.
+По умолчанию `output_dir=models/`
 
 Для тестирования:
 
 ```bash
 python -m kannada_mnist.commands test \
-    --model=<dummy_classifier|conv_classifier> \
-    --path_to_chkpt=<ФАЙЛ С ЧЕКПОИНТОМ МОДЕЛИ>
+    --model=<НАЗВАНИЕ МОДЕЛИ> \
+    --path_to_ckpt=<ПУТЬ К ЧЕКПОИНТУ>
 ```
 
-По умолчанию `path_to_chkpt=models/<НАЗВАНИЕ МОДЕЛИ>.ckpt`.
+По умолчанию `path_to_ckpt=models/<НАЗВАНИЕ МОДЕЛИ>.ckpt`.
 
 ## Production preparation
 
@@ -111,34 +113,29 @@ python -m kannada_mnist.commands test \
 
 ```bash
 python -m kannada_mnist.commands export_to_onnx \
-    --model=<dummy_classifier|conv_classifier> \
-    --path_to_chkpt=<ФАЙЛ С ЧЕКПОИНТОМ МОДЕЛИ> \
-    --output_dir=<ДИРЕКТОРИЯ КУДА ПОЛОЖИТЬ ФАЙЛ .onnx>
+    --model=<НАЗВАНИЕ МОДЕЛИ> \
+    --path_to_ckpt=<ПУТЬ К ЧЕКПОИНТУ> \
+    --output_dir=<ДИРЕКТОРИЯ ДЛЯ СОХРАНЕНИЯ ONNX-ФАЙЛА>
 ```
+
+После выполнения команды сконвертированная модель будет сохранена в файле `<НАЗВАНИЕ МОДЕЛИ>_onnx.onnx` в указанной директории `output_dir`.
+По умолчанию `path_to_ckpt=models/<НАЗВАНИЕ МОДЕЛИ>.ckpt`, `output_dir=models/`.
 
 ## Infer
 
-Для генерации случайного датасета для предсказаний (из тестовой части данных):
-
-```bash
-python -m kannada_mnist.commands generate_predict_dataset \
-    --fraction=<ДОЛЯ РАЗМЕРА ДАТАСЕТА ОТ ВСЕЙ ТЕСТОВОЙ ВЫБОРКИ> \
-    --random_seed=<ВАШ RANDOM SEED>
-```
-
 ### Локальный инференс из lightning-чекпоинта
 
-**Формат входных данных:** CSV-файл, каждая строка - вектор из 784 чисел (0–255).
-**Формат выходных данных:** файл `predictions.csv` с колонками `row_id` и `label`.
+**Формат входных данных:** CSV-файл, каждая строка - `id` строки и вектор из 784 чисел (0–255).
+**Формат выходных данных:** CSV-файл `predictions.csv` с колонками `id` и `label` (`id` строки и предсказанный класс).
 
 Для получения предсказаний выполните:
 
 ```bash
 python -m kannada_mnist.commands predict \
-    --model=<dummy_classifier|conv_classifier> \
-    --input_path=<ПУТЬ К CSV ФАЙЛУ> \
-    --output_path=<ПУТЬ К CSV ДЛЯ ПРЕДСКАЗАНИЙ> \
-    --path_to_chkpt=<ФАЙЛ С ЧЕКПОИНТОМ МОДЕЛИ>
+    --model=<НАЗВАНИЕ МОДЕЛИ> \
+    --input_file=<ПУТЬ К CSV ФАЙЛУ> \
+    --output_file=<ПУТЬ К CSV ДЛЯ ПРЕДСКАЗАНИЙ> \
+    --path_to_ckpt=<ФАЙЛ С ЧЕКПОИНТОМ МОДЕЛИ>
 ```
 
-По умолчанию `input_path=data/predict.csv`, `output_path=data/predictions.csv`, `path_to_chkpt=models/<НАЗВАНИЕ МОДЕЛИ>.ckpt`.
+По умолчанию `input_file=data/predict.csv`, `output_file=data/<НАЗВАНИЕ МОДЕЛИ>_predictions.csv`, `path_to_ckpt=models/<НАЗВАНИЕ МОДЕЛИ>.ckpt`.
