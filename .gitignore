@@ -8,6 +8,6 @@ __pycache__/
 /models
 kannada_mnist/utilities/download_data.py
 /models
-/plots
 /1
 mlflow.db
+kannada_mnist/utilities/generate_predict_dataset.py

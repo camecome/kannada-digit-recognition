@@ -31,12 +31,13 @@ def run_training(cfg):
     )
 
     trainer.fit(module, datamodule=datamodule)
-    trainer.save_checkpoint(cfg.training.chkpt_path)
 
-    # os.makedirs(os.path.dirname(cfg.training.chkpt_path), exist_ok=True)
-    # torch.save(module.model.state_dict(), cfg.training.chkpt_path)
+    # os.makedirs(os.path.dirname(cfg.training.path_to_ckpt), exist_ok=True)
+    trainer.save_checkpoint(cfg.training.path_to_ckpt, weights_only=False)
+
+    # torch.save(module.model.state_dict(), cfg.training.path_to_ckpt)
 
 
-def train(model: str, target_dir: str = None):
-    cfg = build_train_config(model=model, target_dir=target_dir)
+def train(model: str, output_dir: str = None):
+    cfg = build_train_config(model=model, output_dir=output_dir)
     run_training(cfg)

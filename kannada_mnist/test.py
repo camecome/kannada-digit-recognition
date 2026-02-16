@@ -1,5 +1,4 @@
 import lightning as L
-import torch
 from lightning.pytorch.loggers import MLFlowLogger
 
 from kannada_mnist.lightning_modules.data_module import KannadaMNISTDataModule
@@ -13,13 +12,15 @@ def run_testing(cfg):
     datamodule.setup(stage="test")
 
     model_instance = get_model(cfg.model, datamodule)
-    module = KannadaMNISTModule(
+
+    module = KannadaMNISTModule.load_from_checkpoint(
+        checkpoint_path=cfg.training.path_to_ckpt,
+        weights_only=False,
         model=model_instance,
         datamodule=datamodule,
         config=cfg.training,
     )
-
-    module.model.load_state_dict(torch.load(cfg.training.chkpt_path))
+    module.eval()
 
     mlflow_logger = MLFlowLogger(
         tracking_uri=cfg.logger.mlflow.tracking_uri,
@@ -33,6 +34,6 @@ def run_testing(cfg):
     trainer.test(module, datamodule=datamodule)
 
 
-def test(model: str, path_to_chkpt: str = None):
-    cfg = build_test_config(model, path_to_chkpt)
+def test(model: str, path_to_ckpt: str = None):
+    cfg = build_test_config(model, path_to_ckpt)
     run_testing(cfg)

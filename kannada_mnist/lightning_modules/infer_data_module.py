@@ -16,9 +16,7 @@ class InferDataModule(L.LightningDataModule):
         self.input_file = Path(config.input_file)
         self.batch_size = config.batch_size
         self.num_workers = config.num_workers
-
         self.num_classes = config.num_classes
-
         self._default_transform = transforms.Compose([ToTensor28x28()])
 
     def get_num_classes(self):

@@ -1,7 +1,7 @@
 input_file: null
 output_file: null
-path_to_chkpt: null
+path_to_ckpt: null
 model: null
-batch_size: 64
+batch_size: 128
 num_workers: 0
 num_classes: 10

@@ -3,6 +3,7 @@ from pathlib import Path
 
 import lightning as L
 import matplotlib.pyplot as plt
+import pandas as pd
 import torch
 import torchmetrics
 from omegaconf import DictConfig
@@ -33,13 +34,6 @@ class KannadaMNISTModule(L.LightningModule):
         self.val_losses = []
         self.val_accuracies = []
 
-    @classmethod
-    def load_from_state_dict(cls, state_dict, model_instance, datamodule, config):
-        model_instance.load_state_dict(state_dict)
-        module = cls(model=model_instance, datamodule=datamodule, config=config)
-        module.model.load_state_dict(state_dict)
-        return module
-
     def on_fit_start(self):
         if self.logger is not None:
             model_name = self.model.__class__.__name__
@@ -63,7 +57,7 @@ class KannadaMNISTModule(L.LightningModule):
         inputs, targets = batch
         outputs = self.forward(inputs)
         loss = self.criterion(outputs, targets)
-        self.log("train_loss", loss, prog_bar=True, logger=True, on_step=True, on_epoch=True)
+        self.log("train_loss", loss, prog_bar=True, logger=True, on_step=False, on_epoch=True)
 
         # Useless plot
         # self.log(
@@ -111,11 +105,29 @@ class KannadaMNISTModule(L.LightningModule):
             "test_accuracy", self.accuracy, prog_bar=True, logger=True, on_step=False, on_epoch=True
         )
 
+    def on_predict_start(self):
+        self._predict_ids = []
+        self._predict_labels = []
+
     def predict_step(self, batch):
-        inputs = batch
+        inputs, ids = batch
         outputs = self.forward(inputs)
         predicted_labels = torch.argmax(outputs, dim=1)
+
+        self._predict_ids.append(ids.detach().cpu())
+        self._predict_labels.append(predicted_labels.detach().cpu())
+
         return predicted_labels
+
+    def on_predict_epoch_end(self):
+        ids = torch.cat(self._predict_ids)
+        preds = torch.cat(self._predict_labels)
+
+        output_file = Path(self.config.output_file)
+        df = pd.DataFrame({"id": ids.numpy(), "label": preds.numpy()})
+
+        df.to_csv(output_file, index=False)
+        print(f"Saved predictions to {output_file}")
 
     def visualize(self, title: str, label: str, losses: list[float], to_save: Path):
         plt.figure()

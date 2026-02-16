@@ -1,4 +1,5 @@
 import torch.nn as nn
+from torch import Tensor
 
 from kannada_mnist.utilities.constants import MODEL_REGISTRY
 
@@ -28,7 +29,7 @@ class DummyClassifier(nn.Module):
             ),
         )
 
-    def forward(self, input_tensor):
+    def forward(self, input_tensor: Tensor) -> Tensor:
         features = self.convolutional_block(input_tensor)
         logits = self.classifier(features)
         return logits
@@ -114,7 +115,7 @@ class ConvClassifier(nn.Module):
             ),
         )
 
-    def forward(self, input_tensor):
+    def forward(self, input_tensor: Tensor) -> Tensor:
         features = self.convolutional_block_1(input_tensor)
         features = self.convolutional_block_2(features)
         features = self.convolutional_block_3(features)
