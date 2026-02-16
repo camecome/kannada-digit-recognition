@@ -114,6 +114,9 @@ class KannadaMNISTModule(L.LightningModule):
             "val_accuracy", self.accuracy, prog_bar=True, logger=True, on_step=False, on_epoch=True
         )
 
+    def on_validation_epoch_start(self):
+        self.accuracy.reset()
+
     def on_validation_epoch_end(self):
         val_loss = self.trainer.callback_metrics.get("val_loss")
         val_acc = self.trainer.callback_metrics.get("val_accuracy")
@@ -132,6 +135,9 @@ class KannadaMNISTModule(L.LightningModule):
         self.log(
             "test_accuracy", self.accuracy, prog_bar=True, logger=True, on_step=False, on_epoch=True
         )
+
+    def on_test_epoch_start(self):
+        self.accuracy.reset()
 
     def on_predict_start(self):
         self._predict_ids = []
