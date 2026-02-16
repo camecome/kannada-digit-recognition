@@ -1,0 +1,5 @@
+data_dir: "data"
+batch_size: 64
+data_split_ratio: 0.2
+num_workers: 0
+random_seed: 42
