@@ -49,6 +49,9 @@ class KannadaMNISTModule(L.LightningModule):
                     "scheduler_patience": self.config.scheduler.patience,
                 }
             )
+            self.logger.experiment.set_tag(
+                key="Dataset", value="Kannada MNIST", run_id=self.logger.run_id
+            )
 
     def forward(self, inputs):
         return self.model(inputs)
@@ -73,6 +76,31 @@ class KannadaMNISTModule(L.LightningModule):
         avg_loss = self.trainer.callback_metrics.get("train_loss")
         if avg_loss is not None:
             self.train_losses.append(avg_loss.item())
+
+    def on_train_end(self):
+        if self.train_losses:
+            self.visualize(
+                title="Train Loss",
+                label="train_loss",
+                losses=self.train_losses,
+                to_save=self.plots_dir / f"train_loss_{self.model.__class__.__name__}.png",
+            )
+
+        if self.val_losses:
+            self.visualize(
+                title="Validation Loss",
+                label="val_loss",
+                losses=self.val_losses,
+                to_save=self.plots_dir / f"val_loss_{self.model.__class__.__name__}.png",
+            )
+
+        if self.val_accuracies:
+            self.visualize(
+                title="Validation Accuracy",
+                label="val_accuracy",
+                losses=self.val_accuracies,
+                to_save=self.plots_dir / f"val_accuracy_{self.model.__class__.__name__}.png",
+            )
 
     def validation_step(self, batch):
         inputs, targets = batch
@@ -138,31 +166,6 @@ class KannadaMNISTModule(L.LightningModule):
         plt.legend()
         plt.savefig(to_save)
         plt.close()
-
-    def on_train_end(self):
-        if self.train_losses:
-            self.visualize(
-                title="Train Loss",
-                label="train_loss",
-                losses=self.train_losses,
-                to_save=self.plots_dir / f"train_loss_{self.model.__class__.__name__}.png",
-            )
-
-        if self.val_losses:
-            self.visualize(
-                title="Validation Loss",
-                label="val_loss",
-                losses=self.val_losses,
-                to_save=self.plots_dir / f"val_loss_{self.model.__class__.__name__}.png",
-            )
-
-        if self.val_accuracies:
-            self.visualize(
-                title="Validation Accuracy",
-                label="val_accuracy",
-                losses=self.val_accuracies,
-                to_save=self.plots_dir / f"val_accuracy_{self.model.__class__.__name__}.png",
-            )
 
     def get_optimizer(self):
         cfg = self.config.optimizer

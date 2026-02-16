@@ -22,6 +22,7 @@ def run_training(cfg):
     mlflow_logger = MLFlowLogger(
         tracking_uri=cfg.logger.mlflow.tracking_uri,
         experiment_name=cfg.logger.mlflow.experiment_name,
+        run_name="kannada_mnist_run",
     )
 
     trainer = L.Trainer(
@@ -31,11 +32,7 @@ def run_training(cfg):
     )
 
     trainer.fit(module, datamodule=datamodule)
-
-    # os.makedirs(os.path.dirname(cfg.training.path_to_ckpt), exist_ok=True)
     trainer.save_checkpoint(cfg.training.path_to_ckpt, weights_only=False)
-
-    # torch.save(module.model.state_dict(), cfg.training.path_to_ckpt)
 
 
 def train(model: str, output_dir: str = None):
